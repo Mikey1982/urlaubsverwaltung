@@ -1,19 +1,5 @@
 package org.synyx.urlaubsverwaltung.department;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.synyx.urlaubsverwaltung.application.domain.Application;
-import org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus;
-import org.synyx.urlaubsverwaltung.application.service.ApplicationService;
-import org.synyx.urlaubsverwaltung.person.Person;
-import org.synyx.urlaubsverwaltung.person.Role;
-import org.synyx.urlaubsverwaltung.testdatacreator.TestDataCreator;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -26,6 +12,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.synyx.urlaubsverwaltung.application.domain.Application;
+import org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus;
+import org.synyx.urlaubsverwaltung.application.service.ApplicationService;
+import org.synyx.urlaubsverwaltung.person.Person;
+import org.synyx.urlaubsverwaltung.person.Role;
+import org.synyx.urlaubsverwaltung.testdatacreator.TestDataCreator;
 
 
 public class DepartmentServiceImplTest {
@@ -180,7 +180,7 @@ public class DepartmentServiceImplTest {
         List<Person> members = sut.getManagedMembersOfDepartmentHead(departmentHead);
 
         Assert.assertNotNull("Should not be null", members);
-        Assert.assertEquals("Wrong number of members", 7, members.size());
+        Assert.assertEquals("Wrong number of members", 6, members.size());
     }
 
 
@@ -253,7 +253,7 @@ public class DepartmentServiceImplTest {
         admins.setMembers(asList(admin1, admin2, noDepartmentHead));
 
         when(departmentRepository.getManagedDepartments(noDepartmentHead))
-            .thenReturn(singletonList(admins));
+        .thenReturn(singletonList(admins));
 
         boolean isDepartmentHead = sut.isDepartmentHeadOfPerson(noDepartmentHead, admin1);
 
@@ -300,8 +300,8 @@ public class DepartmentServiceImplTest {
 
         when(departmentRepository.getAssignedDepartments(person)).thenReturn(asList(admins, marketing));
         when(applicationService.getApplicationsForACertainPeriodAndPerson(any(LocalDate.class),
-            any(LocalDate.class), any(Person.class)))
-            .thenReturn(emptyList());
+                any(LocalDate.class), any(Person.class)))
+        .thenReturn(emptyList());
 
         List<Application> applications = sut.getApplicationsForLeaveOfMembersInDepartmentsOfPerson(person, date, date);
 
@@ -314,19 +314,19 @@ public class DepartmentServiceImplTest {
 
         // Ensure fetches applications for leave for every department member
         verify(applicationService)
-            .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(admin1));
+        .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(admin1));
         verify(applicationService)
-            .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(admin2));
+        .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(admin2));
         verify(applicationService)
-            .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(marketing1));
+        .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(marketing1));
         verify(applicationService)
-            .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(marketing2));
+        .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(marketing2));
         verify(applicationService)
-            .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(marketing3));
+        .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(marketing3));
 
         // Ensure does not fetch applications for leave for the given person
         verify(applicationService, never())
-            .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(person));
+        .getApplicationsForACertainPeriodAndPerson(eq(date), eq(date), eq(person));
     }
 
 
@@ -360,12 +360,12 @@ public class DepartmentServiceImplTest {
         when(departmentRepository.getAssignedDepartments(person)).thenReturn(asList(admins, marketing));
 
         when(applicationService.getApplicationsForACertainPeriodAndPerson(any(LocalDate.class),
-            any(LocalDate.class), eq(admin1)))
-            .thenReturn(asList(waitingApplication, otherApplication));
+                any(LocalDate.class), eq(admin1)))
+        .thenReturn(asList(waitingApplication, otherApplication));
 
         when(applicationService.getApplicationsForACertainPeriodAndPerson(any(LocalDate.class),
-            any(LocalDate.class), eq(marketing1)))
-            .thenReturn(singletonList(allowedApplication));
+                any(LocalDate.class), eq(marketing1)))
+        .thenReturn(singletonList(allowedApplication));
 
         List<Application> applications = sut.getApplicationsForLeaveOfMembersInDepartmentsOfPerson(person, date, date);
 
@@ -373,7 +373,7 @@ public class DepartmentServiceImplTest {
         Assert.assertTrue("Should contain the waiting application", applications.contains(waitingApplication));
         Assert.assertTrue("Should contain the allowed application", applications.contains(allowedApplication));
         Assert.assertFalse("Should not contain an application with other status",
-            applications.contains(otherApplication));
+                applications.contains(otherApplication));
     }
 
     @Test
@@ -419,7 +419,7 @@ public class DepartmentServiceImplTest {
         dep.setMembers(asList(person, departmentHead));
 
         when(departmentRepository.getManagedDepartments(departmentHead))
-            .thenReturn(singletonList(dep));
+        .thenReturn(singletonList(dep));
 
         boolean isAllowed = sut.isSignedInUserAllowedToAccessPersonData(departmentHead, person);
 
@@ -429,7 +429,7 @@ public class DepartmentServiceImplTest {
 
     @Test
     public void ensureSignedInDepartmentHeadThatIsNotDepartmentHeadOfPersonCanNotAccessPersonData()
-        throws IllegalAccessException {
+            throws IllegalAccessException {
 
         Person person = TestDataCreator.createPerson(23, "person");
         person.setPermissions(singletonList(Role.USER));
@@ -441,17 +441,17 @@ public class DepartmentServiceImplTest {
         dep.setMembers(singletonList(departmentHead));
 
         when(departmentRepository.getManagedDepartments(departmentHead))
-            .thenReturn(singletonList(dep));
+        .thenReturn(singletonList(dep));
 
         boolean isAllowed = sut.isSignedInUserAllowedToAccessPersonData(departmentHead, person);
 
         Assert.assertFalse("Department head - but not of person - should not be able to access the person's data",
-            isAllowed);
+                isAllowed);
     }
 
     @Test
     public void ensureSignedInDepartmentHeadCanNotAccessSecondStageAuthorityPersonData()
-        throws IllegalAccessException {
+            throws IllegalAccessException {
 
         Person secondStageAuthority = TestDataCreator.createPerson(23, "secondStageAuthority");
         secondStageAuthority.setPermissions(asList(Role.USER, Role.SECOND_STAGE_AUTHORITY));
@@ -464,17 +464,17 @@ public class DepartmentServiceImplTest {
         dep.setSecondStageAuthorities(singletonList(secondStageAuthority));
 
         when(departmentRepository.getManagedDepartments(departmentHead))
-            .thenReturn(singletonList(dep));
+        .thenReturn(singletonList(dep));
 
         boolean isAllowed = sut.isSignedInUserAllowedToAccessPersonData(departmentHead, secondStageAuthority);
 
         Assert.assertFalse("Department head - but not of secondStageAuthority - should not be able to access the secondStageAuthority's data",
-            isAllowed);
+                isAllowed);
     }
 
     @Test
     public void ensureSignedInSecondStageAuthorityCanAccessDepartmentHeadPersonData()
-        throws IllegalAccessException {
+            throws IllegalAccessException {
 
         Person secondStageAuthority = TestDataCreator.createPerson(23, "secondStageAuthority");
         secondStageAuthority.setPermissions(asList(Role.USER, Role.SECOND_STAGE_AUTHORITY, Role.DEPARTMENT_HEAD));
@@ -492,7 +492,7 @@ public class DepartmentServiceImplTest {
         boolean isAllowed = sut.isSignedInUserAllowedToAccessPersonData(secondStageAuthority, departmentHead);
 
         Assert.assertTrue("secondStageAuthority should be able to access the departmentHeads's data",
-            isAllowed);
+                isAllowed);
     }
 
     @Test
@@ -507,7 +507,7 @@ public class DepartmentServiceImplTest {
         Department dep = TestDataCreator.createDepartment("dep");
         dep.setMembers(asList(person, user));
         when(departmentRepository.getManagedDepartments(user))
-            .thenReturn(singletonList(dep));
+        .thenReturn(singletonList(dep));
 
         boolean isAllowed = sut.isSignedInUserAllowedToAccessPersonData(user, person);
 
