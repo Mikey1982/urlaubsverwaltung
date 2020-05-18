@@ -350,11 +350,16 @@
         <version>${maven-release-plugin.version}</version>
       </plugin>
 
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
 
+
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <configuration>
+        <executable>true</executable>
+    </configuration>
+</plugin>
+     
       <!-- Frontend assets -->
       <plugin>
         <groupId>com.github.eirslett</groupId>

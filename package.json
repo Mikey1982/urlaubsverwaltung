@@ -10,9 +10,9 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/main/webapp",
-    "build": "NODE_ENV=production webpack --mode production",
-    "build:dev": "NODE_ENV=development webpack --mode development",
-    "build:watch": "NODE_ENV=development webpack --mode development --watch"
+    "build": "SET NODE_ENV=production & webpack --mode production",
+    "build:dev": "SET NODE_ENV=development & webpack --mode development",
+    "build:watch": "SET NODE_ENV=development & webpack --mode development --watch"
   },
   "repository": {
     "type": "git",
