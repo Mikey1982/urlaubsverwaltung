@@ -1,3 +1,16 @@
+### [urlaubsverwaltung-3.4.5](https://github.com/synyx/urlaubsverwaltung/releases/tag/urlaubsverwaltung-3.4.3)
+* Upgrade spring boot parent to 2.1.16
+
+### [urlaubsverwaltung-3.4.4](https://github.com/synyx/urlaubsverwaltung/releases/tag/urlaubsverwaltung-3.4.4)
+* Dependency upgrades see [milestone](https://github.com/synyx/urlaubsverwaltung/milestone/76?closed=1)
+
+### [urlaubsverwaltung-3.4.3](https://github.com/synyx/urlaubsverwaltung/releases/tag/urlaubsverwaltung-3.4.3)
+* Downgrade spring boot parent to 2.1.14, because of mapping problems in the controller layer.
+
+### [urlaubsverwaltung-3.4.2](https://github.com/synyx/urlaubsverwaltung/releases/tag/urlaubsverwaltung-3.4.2)
+* Documentation adjustments
+* Dependency upgrades see [milestone](https://github.com/synyx/urlaubsverwaltung/milestone/71?closed=1)
+
 ### [urlaubsverwaltung-3.4.1](https://github.com/synyx/urlaubsverwaltung/releases/tag/urlaubsverwaltung-3.4.1)
 * Use comment date for application cancel requested state of application [#1089](https://github.com/synyx/urlaubsverwaltung/pull/1089)
 * Log login attempts/errors for oidc provider [#1076](https://github.com/synyx/urlaubsverwaltung/pull/1076) 
