@@ -46,20 +46,16 @@ public class PersonServiceImplTest {
 
     @Mock
     private PersonDAO personDAO;
-
     @Mock
     private AccountInteractionService accountInteractionService;
-
     @Mock
     private WorkingTimeService workingTimeService;
-
     @Mock
     private SecurityContext securityContext;
-
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
-    private ArgumentCaptor<PersonDisabledEvent> personDisabledEventArgumentCaptor = ArgumentCaptor.forClass(PersonDisabledEvent.class);
+    private final ArgumentCaptor<PersonDisabledEvent> personDisabledEventArgumentCaptor = ArgumentCaptor.forClass(PersonDisabledEvent.class);
 
     @Before
     public void setUp() {
@@ -84,26 +80,26 @@ public class PersonServiceImplTest {
     @Test
     public void ensureCreatedPersonHasCorrectAttributes() {
 
-        Person person = new Person("rick", "Grimes", "Rick", "rick@grimes.de");
+        final Person person = new Person("rick", "Grimes", "Rick", "rick@grimes.de");
         person.setPermissions(asList(USER, BOSS));
         person.setNotifications(asList(NOTIFICATION_USER, NOTIFICATION_BOSS_ALL));
 
         when(personDAO.save(person)).thenReturn(person);
 
-        Person createdPerson = sut.create(person);
+        final Person createdPerson = sut.create(person);
 
-        Assert.assertEquals("Wrong username", "rick", createdPerson.getUsername());
-        Assert.assertEquals("Wrong first name", "Rick", createdPerson.getFirstName());
-        Assert.assertEquals("Wrong last name", "Grimes", createdPerson.getLastName());
-        Assert.assertEquals("Wrong email", "rick@grimes.de", createdPerson.getEmail());
+        assertThat(createdPerson.getUsername()).isEqualTo("rick");
+        assertThat(createdPerson.getFirstName()).isEqualTo("Rick");
+        assertThat(createdPerson.getLastName()).isEqualTo("Grimes");
+        assertThat(createdPerson.getEmail()).isEqualTo("rick@grimes.de");
 
-        Assert.assertEquals("Wrong number of notifications", 2, createdPerson.getNotifications().size());
-        Assert.assertTrue("Missing notification", createdPerson.getNotifications().contains(NOTIFICATION_USER));
-        Assert.assertTrue("Missing notification", createdPerson.getNotifications().contains(NOTIFICATION_BOSS_ALL));
+        assertThat(createdPerson.getNotifications())
+            .hasSize(2)
+            .contains(NOTIFICATION_USER, NOTIFICATION_BOSS_ALL);
 
-        Assert.assertEquals("Wrong number of permissions", 2, createdPerson.getPermissions().size());
-        Assert.assertTrue("Missing permission", createdPerson.getPermissions().contains(USER));
-        Assert.assertTrue("Missing permission", createdPerson.getPermissions().contains(BOSS));
+        assertThat(createdPerson.getPermissions())
+            .hasSize(2)
+            .contains(USER, BOSS);
 
         verify(accountInteractionService).createDefaultAccount(person);
         verify(workingTimeService).createDefaultWorkingTime(person);
@@ -433,8 +429,9 @@ public class PersonServiceImplTest {
         final Person personWithOfficeRole = sut.appointAsOfficeUserIfNoOfficeUserPresent(person);
 
         final Collection<Role> permissions = personWithOfficeRole.getPermissions();
-        assertThat(permissions).hasSize(2);
-        assertThat(permissions).contains(USER, OFFICE);
+        assertThat(permissions)
+            .hasSize(2)
+            .contains(USER, OFFICE);
     }
 
     @Test
@@ -451,8 +448,9 @@ public class PersonServiceImplTest {
         final Person personWithOfficeRole = sut.appointAsOfficeUserIfNoOfficeUserPresent(person);
 
         final Collection<Role> permissions = personWithOfficeRole.getPermissions();
-        assertThat(permissions).hasSize(1);
-        assertThat(permissions).containsOnly(USER);
+        assertThat(permissions)
+            .hasSize(1)
+            .containsOnly(USER);
     }
 
     @Test
