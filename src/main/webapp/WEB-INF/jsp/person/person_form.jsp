@@ -211,8 +211,8 @@
                                             <spring:message code="person.form.permissions.roles.DEPARTMENT_HEAD"/>
                                         </strong>
                                         <label class="mb-2">
-                                            <form:checkbox path="permissions" value="DEPARTMENT_HEAD"/><spring:message
-                                            code="person.form.permissions.roles.DEPARTMENT_HEAD.description"/>
+                                            <form:checkbox path="permissions" value="DEPARTMENT_HEAD" onchange="!$(this).prop('checked')&&$(\"[value='NOTIFICATION_DEPARTMENT_HEAD']\").prop('checked',false);"/>
+                                            <spring:message code="person.form.permissions.roles.DEPARTMENT_HEAD.description"/>
                                         </label>
                                         <label class="ml-5 pb-2">
                                             <form:checkbox path="notifications" value="NOTIFICATION_DEPARTMENT_HEAD"/>
@@ -241,8 +241,8 @@
                                             <spring:message code="person.form.permissions.roles.SECOND_STAGE_AUTHORITY"/>
                                         </strong>
                                         <label class="mb-2">
-                                            <form:checkbox path="permissions"
-                                                           value="SECOND_STAGE_AUTHORITY"/><spring:message
+                                            <form:checkbox path="permissions" value="SECOND_STAGE_AUTHORITY" onchange="!$(this).prop('checked')&&$(\"[value='NOTIFICATION_SECOND_STAGE_AUTHORITY']\").prop('checked',false);"/>
+                                            <spring:message
                                             code="person.form.permissions.roles.SECOND_STAGE_AUTHORITY.description"/>
                                         </label>
                                         <label class="ml-5 pb-2">
@@ -274,15 +274,16 @@
                                             <spring:message code="person.form.permissions.roles.BOSS"/>
                                         </strong>
                                         <label class="mb-2">
-                                            <form:checkbox path="permissions" value="BOSS"/><spring:message
-                                            code="person.form.permissions.roles.BOSS.description"/>
+                                            <form:checkbox path="permissions" value="BOSS" onchange="!$(this).prop('checked')&&$(\"[value*='NOTIFICATION_BOSS']\").prop('checked',false);"/>
+                                            <spring:message code="person.form.permissions.roles.BOSS.description"/>
+                                            
                                         </label>
-                                        <label class="mb-2">
-                                            <form:radiobutton path="notifications" value="NOTIFICATION_BOSS_ALL"/>
+                                        <label class="ml-5 mb-2">
+                                            <form:checkbox path="notifications" value="NOTIFICATION_BOSS_ALL"  onchange="$(this).prop('checked')&&$(\"[value='NOTIFICATION_BOSS_DEPARTMENTS']\").prop('checked',false);"/>
                                             <spring:message code="person.form.notifications.BOSS.all"/>
                                         </label>
-                                        <label>
-                                            <form:radiobutton path="notifications" value="NOTIFICATION_BOSS_DEPARTMENTS"/>
+                                        <label class="ml-5 mb-2">
+                                            <form:checkbox path="notifications" value="NOTIFICATION_BOSS_DEPARTMENTS" onchange="$(this).prop('checked')&&$(\"[value='NOTIFICATION_BOSS_ALL']\").prop('checked',false);"/>
                                             <spring:message code="person.form.notifications.BOSS.departments"/>
                                         </label>
                                     </div>
