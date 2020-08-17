@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.synyx.urlaubsverwaltung.api.ResponseWrapper;
-import org.synyx.urlaubsverwaltung.api.RestApiDateFormat;
+import org.springframework.web.server.ResponseStatusException;
 import org.synyx.urlaubsverwaltung.api.RestControllerAdviceMarker;
 import org.synyx.urlaubsverwaltung.period.DayLength;
 import org.synyx.urlaubsverwaltung.person.Person;
@@ -30,6 +29,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.synyx.urlaubsverwaltung.api.SwaggerConfig.EXAMPLE_YEAR;
 
 @RestControllerAdviceMarker
 @Api("Public Holidays: Get information about public holidays")
@@ -57,8 +58,8 @@ public class PublicHolidayApiController {
     )
     @GetMapping("/holidays")
     @PreAuthorize(SecurityRules.IS_OFFICE + " or @userApiMethodSecurity.isSamePersonId(authentication, #personId)")
-    public ResponseWrapper<PublicHolidayListResponse> getPublicHolidays(
-        @ApiParam(value = "Year to get the public holidays for", defaultValue = RestApiDateFormat.EXAMPLE_YEAR)
+    public List<PublicHolidayResponse> getPublicHolidays(
+        @ApiParam(value = "Year to get the public holidays for", defaultValue = EXAMPLE_YEAR)
         @RequestParam("year")
             String year,
         @ApiParam(value = "Month of year to get the public holidays for")
@@ -68,67 +69,52 @@ public class PublicHolidayApiController {
         @RequestParam(value = "person", required = false)
             Integer personId) {
 
-        Optional<Person> optionalPerson = personId == null ? Optional.empty() : personService.getPersonByID(personId);
-
-        if (personId != null && !optionalPerson.isPresent()) {
-            throw new IllegalArgumentException("No person found for ID=" + personId);
+        final Optional<Person> optionalPerson = personId == null ? Optional.empty() : personService.getPersonByID(personId);
+        if (personId != null && optionalPerson.isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "No person found for ID=" + personId);
         }
 
-        Optional<String> optionalMonth = Optional.ofNullable(month);
+        final Optional<String> optionalMonth = Optional.ofNullable(month);
+        final FederalState federalState = getFederalState(year, optionalMonth, optionalPerson);
 
-        FederalState federalState = getFederalState(year, optionalMonth, optionalPerson);
-        Set<Holiday> holidays = getHolidays(year, optionalMonth, federalState);
-
-        List<PublicHolidayResponse> publicHolidayResponses = holidays.stream()
-            .map(holiday -> this.mapPublicHolidayToDto(holiday, federalState))
-            .collect(toList());
-
-        return new ResponseWrapper<>(new PublicHolidayListResponse(publicHolidayResponses));
+        try {
+            return getHolidays(year, optionalMonth, federalState).stream()
+                .map(holiday -> this.mapPublicHolidayToDto(holiday, federalState))
+                .collect(toList());
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(BAD_REQUEST, e.getMessage());
+        }
     }
 
     private PublicHolidayResponse mapPublicHolidayToDto(Holiday holiday, FederalState federalState) {
-        BigDecimal workingDuration = publicHolidaysService.getWorkingDurationOfDate(holiday.getDate(), federalState);
-        DayLength absenceType = publicHolidaysService.getAbsenceTypeOfDate(holiday.getDate(), federalState);
+        final BigDecimal workingDuration = publicHolidaysService.getWorkingDurationOfDate(holiday.getDate(), federalState);
+        final DayLength absenceType = publicHolidaysService.getAbsenceTypeOfDate(holiday.getDate(), federalState);
         return new PublicHolidayResponse(holiday, workingDuration, absenceType.name());
     }
 
-
     private FederalState getFederalState(String year, Optional<String> optionalMonth, Optional<Person> optionalPerson) {
-
         if (optionalPerson.isPresent()) {
-            LocalDate validFrom = getValidFrom(year, optionalMonth);
-
+            final LocalDate validFrom = getValidFrom(year, optionalMonth);
             return workingTimeService.getFederalStateForPerson(optionalPerson.get(), validFrom);
         }
-
         return settingsService.getSettings().getWorkingTimeSettings().getFederalState();
     }
 
-
     private static LocalDate getValidFrom(String year, Optional<String> optionalMonth) {
-
-        int holidaysYear = Integer.parseInt(year);
-
+        final int holidaysYear = Integer.parseInt(year);
         if (optionalMonth.isPresent()) {
             int holidaysMonth = Integer.parseInt(optionalMonth.get());
-
             return LocalDate.of(holidaysYear, holidaysMonth, 1);
         }
-
         return DateUtil.getFirstDayOfYear(holidaysYear);
     }
 
-
     private Set<Holiday> getHolidays(String year, Optional<String> optionalMonth, FederalState federalState) {
-
-        int holidaysYear = Integer.parseInt(year);
-
+        final int holidaysYear = Integer.parseInt(year);
         if (optionalMonth.isPresent()) {
             int holidaysMonth = Integer.parseInt(optionalMonth.get());
-
             return publicHolidaysService.getHolidays(holidaysYear, holidaysMonth, federalState);
         }
-
         return publicHolidaysService.getHolidays(holidaysYear, federalState);
     }
 }

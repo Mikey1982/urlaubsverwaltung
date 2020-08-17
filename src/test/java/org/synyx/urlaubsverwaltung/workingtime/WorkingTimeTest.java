@@ -1,7 +1,6 @@
 package org.synyx.urlaubsverwaltung.workingtime;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.synyx.urlaubsverwaltung.period.DayLength;
 
 import java.util.Arrays;
@@ -13,33 +12,32 @@ import static java.time.DayOfWeek.SUNDAY;
 import static java.time.DayOfWeek.THURSDAY;
 import static java.time.DayOfWeek.TUESDAY;
 import static java.time.DayOfWeek.WEDNESDAY;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.synyx.urlaubsverwaltung.period.DayLength.ZERO;
 
 
 /**
  * Unit test for {@link WorkingTime}.
  */
-public class WorkingTimeTest {
+class WorkingTimeTest {
 
     @Test
-    public void testDefaultValues() {
+    void testDefaultValues() {
 
         WorkingTime workingTime = new WorkingTime();
 
-        Assert.assertEquals("Wrong day length for monday", DayLength.ZERO, workingTime.getMonday());
-        Assert.assertEquals("Wrong day length for tuesday", DayLength.ZERO, workingTime.getTuesday());
-        Assert.assertEquals("Wrong day length for wednesday", DayLength.ZERO, workingTime.getWednesday());
-        Assert.assertEquals("Wrong day length for thursday", DayLength.ZERO, workingTime.getThursday());
-        Assert.assertEquals("Wrong day length for friday", DayLength.ZERO, workingTime.getFriday());
-        Assert.assertEquals("Wrong day length for saturday", DayLength.ZERO, workingTime.getSaturday());
-        Assert.assertEquals("Wrong day length for sunday", DayLength.ZERO, workingTime.getSunday());
-
-        Assert.assertFalse("There should be no federal state override",
-            workingTime.getFederalStateOverride().isPresent());
+        assertThat(workingTime.getMonday()).isEqualTo(ZERO);
+        assertThat(workingTime.getTuesday()).isEqualTo(ZERO);
+        assertThat(workingTime.getWednesday()).isEqualTo(ZERO);
+        assertThat(workingTime.getThursday()).isEqualTo(ZERO);
+        assertThat(workingTime.getFriday()).isEqualTo(ZERO);
+        assertThat(workingTime.getSaturday()).isEqualTo(ZERO);
+        assertThat(workingTime.getSunday()).isEqualTo(ZERO);
+        assertThat(workingTime.getFederalStateOverride()).isEmpty();
     }
 
-
     @Test
-    public void testHasWorkingDaysIdentical() {
+    void testHasWorkingDaysIdentical() {
 
         List<Integer> workingDays = Arrays.asList(MONDAY.getValue(), TUESDAY.getValue(),
             WEDNESDAY.getValue(), THURSDAY.getValue(), FRIDAY.getValue());
@@ -51,13 +49,12 @@ public class WorkingTimeTest {
         workingTime.setWorkingDays(workingDays, DayLength.FULL);
 
         boolean returnValue = workingTime.hasWorkingDays(workingDaysToCompare);
-
-        Assert.assertTrue("Working days are not identical", returnValue);
+        assertThat(returnValue).isTrue();
     }
 
 
     @Test
-    public void testHasWorkingDaysDifferent() {
+    void testHasWorkingDaysDifferent() {
 
         List<Integer> workingDays = Arrays.asList(MONDAY.getValue(), TUESDAY.getValue(),
             WEDNESDAY.getValue(), THURSDAY.getValue(), FRIDAY.getValue());
@@ -69,7 +66,6 @@ public class WorkingTimeTest {
         workingTime.setWorkingDays(workingDays, DayLength.FULL);
 
         boolean returnValue = workingTime.hasWorkingDays(workingDaysToCompare);
-
-        Assert.assertFalse("Working days are identical", returnValue);
+        assertThat(returnValue).isFalse();
     }
 }

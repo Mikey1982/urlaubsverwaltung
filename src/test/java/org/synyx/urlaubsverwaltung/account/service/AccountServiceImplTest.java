@@ -1,63 +1,58 @@
 package org.synyx.urlaubsverwaltung.account.service;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.synyx.urlaubsverwaltung.account.dao.AccountDAO;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.synyx.urlaubsverwaltung.account.dao.AccountRepository;
 import org.synyx.urlaubsverwaltung.account.domain.Account;
 import org.synyx.urlaubsverwaltung.person.Person;
-import org.synyx.urlaubsverwaltung.testdatacreator.TestDataCreator;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.synyx.urlaubsverwaltung.demodatacreator.DemoDataCreator.createHolidaysAccount;
+import static org.synyx.urlaubsverwaltung.demodatacreator.DemoDataCreator.createPerson;
 
 
 /**
  * Unit test for {@link org.synyx.urlaubsverwaltung.account.service.AccountServiceImpl}.
  */
-public class AccountServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class AccountServiceImplTest {
 
     private AccountService accountService;
 
-    private AccountDAO accountDAO;
+    @Mock
+    private AccountRepository accountRepository;
 
-    @Before
-    public void setUp() {
-
-        accountDAO = mock(AccountDAO.class);
-
-        accountService = new AccountServiceImpl(accountDAO);
+    @BeforeEach
+    void setUp() {
+        accountService = new AccountServiceImpl(accountRepository);
     }
 
-
     @Test
-    public void ensureReturnsOptionalWithHolidaysAccountIfExists() {
+    void ensureReturnsOptionalWithHolidaysAccountIfExists() {
 
-        Person person = TestDataCreator.createPerson();
-        Account account = TestDataCreator.createHolidaysAccount(person, 2012);
-        when(accountDAO.getHolidaysAccountByYearAndPerson(2012, person)).thenReturn(account);
+        final Person person = createPerson();
+        final Account account = createHolidaysAccount(person, 2012);
+        when(accountRepository.getHolidaysAccountByYearAndPerson(2012, person)).thenReturn(account);
 
         Optional<Account> optionalHolidaysAccount = accountService.getHolidaysAccount(2012, person);
-
-        Assert.assertNotNull("Optional must not be null", optionalHolidaysAccount);
-        Assert.assertTrue("Holidays account should exist", optionalHolidaysAccount.isPresent());
-        Assert.assertEquals("Wrong holidays account", account, optionalHolidaysAccount.get());
+        assertThat(optionalHolidaysAccount).contains(account);
     }
 
-
     @Test
-    public void ensureReturnsAbsentOptionalIfNoHolidaysAccountExists() {
+    void ensureReturnsAbsentOptionalIfNoHolidaysAccountExists() {
 
-        when(accountDAO.getHolidaysAccountByYearAndPerson(anyInt(), any(Person.class)))
-            .thenReturn(null);
+        when(accountRepository.getHolidaysAccountByYearAndPerson(anyInt(), any(Person.class))).thenReturn(null);
 
         Optional<Account> optionalHolidaysAccount = accountService.getHolidaysAccount(2012, mock(Person.class));
-
-        Assert.assertNotNull("Optional must not be null", optionalHolidaysAccount);
-        Assert.assertFalse("Holidays account should not exist", optionalHolidaysAccount.isPresent());
+        assertThat(optionalHolidaysAccount).isEmpty();
     }
 }

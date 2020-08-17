@@ -1,14 +1,13 @@
 package org.synyx.urlaubsverwaltung.calendar;
 
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.synyx.urlaubsverwaltung.api.ApiExceptionHandlerControllerAdvice;
 
 import static java.util.Locale.GERMAN;
 import static org.mockito.Mockito.when;
@@ -19,8 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
 
-@RunWith(MockitoJUnitRunner.class)
-public class ICalViewControllerTest {
+@ExtendWith(MockitoExtension.class)
+class ICalViewControllerTest {
 
     private ICalViewController sut;
 
@@ -31,13 +30,13 @@ public class ICalViewControllerTest {
     @Mock
     private CompanyCalendarService companyCalendarService;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         sut = new ICalViewController(personCalendarService, departmentCalendarService, companyCalendarService);
     }
 
     @Test
-    public void getCalendarForPerson() throws Exception {
+    void getCalendarForPerson() throws Exception {
 
         when(personCalendarService.getCalendarForPerson(1, "secret", GERMAN)).thenReturn("iCal string");
 
@@ -51,7 +50,7 @@ public class ICalViewControllerTest {
     }
 
     @Test
-    public void getCalendarForPersonWithBadRequest() throws Exception {
+    void getCalendarForPersonWithBadRequest() throws Exception {
 
         when(personCalendarService.getCalendarForPerson(1, "secret", GERMAN)).thenThrow(new IllegalArgumentException());
 
@@ -62,7 +61,7 @@ public class ICalViewControllerTest {
     }
 
     @Test
-    public void getCalendarForPersonWithNoContent() throws Exception {
+    void getCalendarForPersonWithNoContent() throws Exception {
 
         when(personCalendarService.getCalendarForPerson(1, "secret", GERMAN)).thenThrow(CalendarException.class);
 
@@ -73,7 +72,7 @@ public class ICalViewControllerTest {
     }
 
     @Test
-    public void getCalendarForDepartment() throws Exception {
+    void getCalendarForDepartment() throws Exception {
 
         when(departmentCalendarService.getCalendarForDepartment(1, 2, "secret", GERMAN)).thenReturn("calendar department");
 
@@ -87,7 +86,7 @@ public class ICalViewControllerTest {
     }
 
     @Test
-    public void getCalendarForDepartmentWithBadRequest() throws Exception {
+    void getCalendarForDepartmentWithBadRequest() throws Exception {
 
         when(departmentCalendarService.getCalendarForDepartment(1, 2, "secret", GERMAN)).thenThrow(new IllegalArgumentException());
 
@@ -98,7 +97,7 @@ public class ICalViewControllerTest {
     }
 
     @Test
-    public void getCalendarForDepartmentWithNoContent() throws Exception {
+    void getCalendarForDepartmentWithNoContent() throws Exception {
 
         when(departmentCalendarService.getCalendarForDepartment(1, 2, "secret", GERMAN)).thenThrow(CalendarException.class);
 
@@ -110,7 +109,7 @@ public class ICalViewControllerTest {
 
 
     @Test
-    public void getCalendarForAll() throws Exception {
+    void getCalendarForAll() throws Exception {
 
         when(companyCalendarService.getCalendarForAll(2, "secret", GERMAN)).thenReturn("calendar all");
 
@@ -124,7 +123,7 @@ public class ICalViewControllerTest {
     }
 
     @Test
-    public void getCalendarForAllWithNoContent() throws Exception {
+    void getCalendarForAllWithNoContent() throws Exception {
 
         when(companyCalendarService.getCalendarForAll(2, "secret", GERMAN)).thenThrow(CalendarException.class);
 
@@ -135,6 +134,6 @@ public class ICalViewControllerTest {
     }
 
     private ResultActions perform(MockHttpServletRequestBuilder builder) throws Exception {
-        return standaloneSetup(sut).setControllerAdvice(new ApiExceptionHandlerControllerAdvice()).build().perform(builder);
+        return standaloneSetup(sut).build().perform(builder);
     }
 }

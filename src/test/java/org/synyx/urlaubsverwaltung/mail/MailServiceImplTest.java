@@ -1,10 +1,10 @@
 package org.synyx.urlaubsverwaltung.mail;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.synyx.urlaubsverwaltung.person.Person;
 
@@ -21,8 +21,8 @@ import static org.mockito.Mockito.when;
 import static org.synyx.urlaubsverwaltung.person.MailNotification.OVERTIME_NOTIFICATION_OFFICE;
 
 
-@RunWith(MockitoJUnitRunner.class)
-public class MailServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class MailServiceImplTest {
 
     private MailServiceImpl sut;
 
@@ -31,24 +31,25 @@ public class MailServiceImplTest {
     @Mock
     private MailBuilder mailBuilder;
     @Mock
-    private MailSender mailSender;
+    private MailSenderService mailSenderService;
     @Mock
-    private MailOptionProvider mailOptionProvider;
+    private MailProperties mailProperties;
     @Mock
     private RecipientService recipientService;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
 
         when(messageSource.getMessage(any(), any(), any())).thenReturn("subject");
         when(mailBuilder.buildMailBody(any(), any(), any())).thenReturn("emailBody");
-        when(mailOptionProvider.getSender()).thenReturn("no-reply@firma.test");
+        when(mailProperties.getSender()).thenReturn("no-reply@firma.test");
+        when(mailProperties.getApplicationUrl()).thenReturn("http://localhost:8080");
 
-        sut = new MailServiceImpl(messageSource, mailBuilder, mailSender, mailOptionProvider, recipientService);
+        sut = new MailServiceImpl(messageSource, mailBuilder, mailSenderService, mailProperties, recipientService);
     }
 
     @Test
-    public void sendMailToWithNotification() {
+    void sendMailToWithNotification() {
 
         final Person person = new Person();
         final List<Person> persons = singletonList(person);
@@ -65,11 +66,11 @@ public class MailServiceImplTest {
 
         sut.sendMailTo(OVERTIME_NOTIFICATION_OFFICE, subjectMessageKey, templateName, model);
 
-        verify(mailSender).sendEmail(eq("no-reply@firma.test"), eq(recipients), eq("subject"), eq("emailBody"));
+        verify(mailSenderService).sendEmail(eq("no-reply@firma.test"), eq(recipients), eq("subject"), eq("emailBody"));
     }
 
     @Test
-    public void sendMailToWithPerson() {
+    void sendMailToWithPerson() {
 
         final Person hans = new Person();
         final List<Person> persons = singletonList(hans);
@@ -82,11 +83,11 @@ public class MailServiceImplTest {
 
         sut.sendMailTo(hans, subjectMessageKey, templateName, new HashMap<>());
 
-        verify(mailSender).sendEmail(eq("no-reply@firma.test"), eq(recipients), eq("subject"), eq("emailBody"));
+        verify(mailSenderService).sendEmail(eq("no-reply@firma.test"), eq(recipients), eq("subject"), eq("emailBody"));
     }
 
     @Test
-    public void sendMailToEachPerson() {
+    void sendMailToEachPerson() {
 
         final Person hans = new Person();
         final String hansMail = "hans@firma.test";
@@ -105,21 +106,21 @@ public class MailServiceImplTest {
 
         sut.sendMailToEach(persons, subjectMessageKey, templateName, new HashMap<>());
 
-        verify(mailSender).sendEmail(eq("no-reply@firma.test"), eq(singletonList(hansMail)), eq("subject"), eq("emailBody"));
-        verify(mailSender).sendEmail(eq("no-reply@firma.test"), eq(singletonList(franzMail)), eq("subject"), eq("emailBody"));
+        verify(mailSenderService).sendEmail(eq("no-reply@firma.test"), eq(singletonList(hansMail)), eq("subject"), eq("emailBody"));
+        verify(mailSenderService).sendEmail(eq("no-reply@firma.test"), eq(singletonList(franzMail)), eq("subject"), eq("emailBody"));
     }
 
 
     @Test
-    public void sendTechnicalMail() {
+    void sendTechnicalMail() {
 
         final String subjectMessageKey = "subject.overtime.created";
         final String templateName = "overtime_office";
         String to = "admin@firma.test";
-        when(mailOptionProvider.getAdministrator()).thenReturn(to);
+        when(mailProperties.getAdministrator()).thenReturn(to);
 
         sut.sendTechnicalMail(subjectMessageKey, templateName, new HashMap<>());
 
-        verify(mailSender).sendEmail(eq("no-reply@firma.test"), eq(singletonList(to)), eq("subject"), eq("emailBody"));
+        verify(mailSenderService).sendEmail(eq("no-reply@firma.test"), eq(singletonList(to)), eq("subject"), eq("emailBody"));
     }
 }

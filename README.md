@@ -8,6 +8,15 @@ zu behalten und falls doch mal eine Person ausfallen sollte, so kann die **Krank
 
 Wenn du mehr Informationen und Bilder über dieses Projekt sehen möchtest dann schaue auf unserer [Landingpage] vorbei.
 
+#### End-Of-Life: Version 3.x
+
+| Version 3.x wird nur noch bis zum **31.12.2020** mit Sicherheitsupdates unterstützt.|
+| --- |
+
+Du bist auf der Suche nach Version 3.x? Diese findest du diese auf dem [v3.x branch](https://github.com/synyx/urlaubsverwaltung/tree/v3.x).
+Wenn du wissen möchtest, was alles zu tun ist, um von 3.x auf 4.x umzusteigen?
+Dann wirf einen Blick in den [Migration Guide](https://github.com/synyx/urlaubsverwaltung/wiki/Urlaubsverwaltung-4.0-Migration-Guide).
+
 * [Demo-System](#demo-system)
 * [FAQ](#faq)
 * [Berechtigungen](#berechtigungen)
@@ -110,7 +119,7 @@ uv.account.update.cron=0 0 5 1 1 *
 uv.application.reminder-notification.cron=0 0 7 * * *
 
 # development
-uv.development.testdata.create
+uv.development.demodata.create
 
 # mail
 uv.mail.administrator
@@ -131,6 +140,7 @@ uv.security.directory-service.filter.object-class=person
 ## active directory
 uv.security.directory-service.active-directory.url=ldap://ad.example.org/
 uv.security.directory-service.active-directory.domain=example.org
+uv.security.directory-service.active-directory.searchFilter=
 uv.security.directory-service.active-directory.sync.enabled=false
 uv.security.directory-service.active-directory.sync.password=password
 uv.security.directory-service.active-directory.sync.user-dn=cn=Administrator,cn=users,dc=example,dc=org
@@ -243,17 +253,17 @@ Man kann die automatische Synchronisation aller Benutzer aktivieren, indem der K
 #### Logging konfigurieren
 
 Sollten beim Starten der Anwendung Probleme auftreten, lässt sich in der Konfigurationsdatei eine
-ausführliche Debug-Ausgabe konfigurieren, indem das `logging.level.*` pro Paket konfiguriert 
+ausführliche Debug-Ausgabe konfigurieren, indem das `logging.level.*` pro Paket konfiguriert wird,
 
 ```properties
 logging.level.org.synyx.urlaubsverwaltung=TRACE
 logging.level.org.springframework.security=TRACE
 ```
 
-werden kann sowie eine Logdatei
+sowie eine Logdatei
 
 ```properties
-logging.file=logs/urlaubsverwaltung.log
+logging.file.name=logs/urlaubsverwaltung.log
 ```
 
 geschrieben wird.
@@ -281,10 +291,10 @@ die Datenbank via [Docker Compose](https://docs.docker.com/compose/overview/) zu
 docker-compose up
 ```
 
-und die Anwendung mit dem Profil `testdata` zu starten:
+und die Anwendung mit dem Profil `demodata` zu starten:
 
 ```bash
-java -jar -Dspring.profiles.active=testdata urlaubsverwaltung.war
+java -jar -Dspring.profiles.active=demodata urlaubsverwaltung.war
 ```
 
 Auf diese Weise wird die Anwendung mit einer MariaDB-Datenbankmanagementsystem gestartet und Demodaten generiert.
@@ -303,9 +313,9 @@ Die Demodaten enthalten folgende **Benutzer**:
 
 Möchte man, dass beim Starten der Anwendung keine Demodaten generiert werden, muss die Konfiguration
 
-`uv.development.testdata.create`
+`uv.development.demodata.create`
 
-in den [application-testdata.properties](https://github.com/synyx/urlaubsverwaltung/blob/master/src/main/resources/application-testdata.properties)
+in den [application-demodata.properties](https://github.com/synyx/urlaubsverwaltung/blob/master/src/main/resources/application-demodata.properties)
 auf `false` gesetzt werden.
 
 
@@ -352,28 +362,24 @@ docker-compose up
 gestartet werden.
 
 Die Urlaubsverwaltung ist eine [Spring Boot](http://projects.spring.io/spring-boot/) Anwendung und kann mit dem Maven
-Plugin gestartet werden. Es bietet sich an, die Anwendung mit dem Profil `testdata` zu starten, um Testdaten generieren
+Plugin gestartet werden. Es bietet sich an, die Anwendung mit dem Profil `demodata` zu starten, um Testdaten generieren
 zu lassen:
 
 ```bash
-./mvnw clean spring-boot:run -Dspring-boot.run.profiles=testdata
+./mvnw clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=demodata"
 ```
 
 bzw. für Windows Benutzer über:
 
 ```bash
-./mvnw.cmd clean spring-boot:run -Dspring-boot.run.profiles=testdata
+./mvnw.cmd clean spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=demodata"
 ```
-
-Hinweis: Aufgrund der Spring Boot Dev Tools wird das Profil via `spring-boot.run.profiles` gesetzt, statt via
-`spring.profiles.active`. (vgl. https://github.com/spring-projects/spring-boot/issues/10926)
-
 
 ### Anwendung nutzen
 
 Im Browser lässt sich die Anwendung dann über [http://localhost:8080/](http://localhost:8080/) ansteuern.
 
-Mit dem `testdata` Profil wird eine MariaDB-Datenbank verwendet und es werden Demodaten angelegt,
+Mit dem `demodata` Profil wird eine MariaDB-Datenbank verwendet und es werden Demodaten angelegt,
 d.h. Benutzer, Urlaubsanträge und Krankmeldungen. Daher kann man sich in der Weboberfläche nun mit verschiedenen
 [Demodaten-Benutzer](#demodaten-benutzer) anmelden.
 

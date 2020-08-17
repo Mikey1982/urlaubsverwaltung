@@ -1,17 +1,16 @@
 package org.synyx.urlaubsverwaltung.workingtime.api;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.synyx.urlaubsverwaltung.api.ApiExceptionHandlerControllerAdvice;
+import org.synyx.urlaubsverwaltung.api.RestControllerAdviceExceptionHandler;
 import org.synyx.urlaubsverwaltung.period.DayLength;
 import org.synyx.urlaubsverwaltung.person.Person;
 import org.synyx.urlaubsverwaltung.person.PersonService;
-import org.synyx.urlaubsverwaltung.testdatacreator.TestDataCreator;
 import org.synyx.urlaubsverwaltung.workingtime.NoValidWorkingTimeException;
 import org.synyx.urlaubsverwaltung.workingtime.WorkDaysService;
 
@@ -29,11 +28,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
+import static org.synyx.urlaubsverwaltung.demodatacreator.DemoDataCreator.createPerson;
 import static org.synyx.urlaubsverwaltung.period.DayLength.FULL;
 
 
-@RunWith(MockitoJUnitRunner.class)
-public class WorkDayApiControllerTest {
+@ExtendWith(MockitoExtension.class)
+class WorkDayApiControllerTest {
 
     private WorkDayApiController sut;
 
@@ -42,15 +42,15 @@ public class WorkDayApiControllerTest {
     @Mock
     private WorkDaysService workDaysServiceMock;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         sut = new WorkDayApiController(personServiceMock, workDaysServiceMock);
     }
 
     @Test
-    public void ensureReturnsWorkDays() throws Exception {
+    void ensureReturnsWorkDays() throws Exception {
 
-        Person person = TestDataCreator.createPerson();
+        Person person = createPerson();
         when(personServiceMock.getPersonByID(anyInt())).thenReturn(Optional.of(person));
         when(workDaysServiceMock.getWorkDays(any(DayLength.class), any(LocalDate.class), any(LocalDate.class), any(Person.class)))
             .thenReturn(BigDecimal.ONE);
@@ -61,19 +61,18 @@ public class WorkDayApiControllerTest {
             .param("length", "FULL")
             .param("person", "23"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json;charset=UTF-8"))
-            .andExpect(jsonPath("$.response").exists())
-            .andExpect(jsonPath("$.response.workDays").exists())
-            .andExpect(jsonPath("$.response.workDays", is("1")));
+            .andExpect(content().contentType("application/json"))
+            .andExpect(jsonPath("$.workDays").exists())
+            .andExpect(jsonPath("$.workDays", is("1")));
 
         verify(personServiceMock).getPersonByID(23);
         verify(workDaysServiceMock).getWorkDays(FULL, LocalDate.of(2016, 1, 4), LocalDate.of(2016, 1, 4), person);
     }
 
     @Test
-    public void ensureReturnsNoContentForMissingWorkingDay() throws Exception {
+    void ensureReturnsNoContentForMissingWorkingDay() throws Exception {
 
-        Person person = TestDataCreator.createPerson();
+        final Person person = createPerson();
         when(personServiceMock.getPersonByID(anyInt())).thenReturn(Optional.of(person));
         when(workDaysServiceMock.getWorkDays(any(DayLength.class), any(LocalDate.class), any(LocalDate.class), any(Person.class)))
             .thenThrow(NoValidWorkingTimeException.class);
@@ -87,7 +86,7 @@ public class WorkDayApiControllerTest {
     }
 
     @Test
-    public void ensureBadRequestForMissingFromParameter() throws Exception {
+    void ensureBadRequestForMissingFromParameter() throws Exception {
 
         perform(get("/api/workdays")
             .param("to", "2016-01-06")
@@ -96,9 +95,8 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestForInvalidFromParameter() throws Exception {
+    void ensureBadRequestForInvalidFromParameter() throws Exception {
 
         perform(get("/api/workdays")
             .param("from", "foo")
@@ -108,9 +106,8 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestForMissingToParameter() throws Exception {
+    void ensureBadRequestForMissingToParameter() throws Exception {
 
         perform(get("/api/workdays")
             .param("from", "2016-01-01")
@@ -119,9 +116,8 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestForInvalidToParameter() throws Exception {
+    void ensureBadRequestForInvalidToParameter() throws Exception {
 
         perform(get("/api/workdays")
             .param("from", "2016-01-01")
@@ -131,9 +127,8 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestForMissingPersonParameter() throws Exception {
+    void ensureBadRequestForMissingPersonParameter() throws Exception {
 
         perform(get("/api/workdays")
             .param("from", "2016-01-01")
@@ -142,9 +137,8 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestForInvalidPersonParameter() throws Exception {
+    void ensureBadRequestForInvalidPersonParameter() throws Exception {
 
         perform(get("/api/workdays")
             .param("from", "2016-01-01")
@@ -154,9 +148,8 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestIfThereIsNoPersonForGivenID() throws Exception {
+    void ensureBadRequestIfThereIsNoPersonForGivenID() throws Exception {
 
         when(personServiceMock.getPersonByID(anyInt())).thenReturn(Optional.empty());
 
@@ -170,9 +163,8 @@ public class WorkDayApiControllerTest {
         verify(personServiceMock).getPersonByID(23);
     }
 
-
     @Test
-    public void ensureBadRequestForMissingLengthParameter() throws Exception {
+    void ensureBadRequestForMissingLengthParameter() throws Exception {
 
         perform(get("/api/workdays")
             .param("from", "2016-01-01")
@@ -181,11 +173,10 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestForInvalidLengthParameter() throws Exception {
+    void ensureBadRequestForInvalidLengthParameter() throws Exception {
 
-        Person person = TestDataCreator.createPerson("muster");
+        final Person person = createPerson("muster");
         when(personServiceMock.getPersonByID(anyInt())).thenReturn(Optional.of(person));
 
         perform(get("/api/workdays")
@@ -196,9 +187,8 @@ public class WorkDayApiControllerTest {
             .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    public void ensureBadRequestForInvalidPeriod() throws Exception {
+    void ensureBadRequestForInvalidPeriod() throws Exception {
 
         perform(get("/api/workdays")
             .param("from", "2016-01-01")
@@ -209,6 +199,6 @@ public class WorkDayApiControllerTest {
     }
 
     private ResultActions perform(MockHttpServletRequestBuilder builder) throws Exception {
-        return standaloneSetup(sut).setControllerAdvice(new ApiExceptionHandlerControllerAdvice()).build().perform(builder);
+        return standaloneSetup(sut).setControllerAdvice(new RestControllerAdviceExceptionHandler()).build().perform(builder);
     }
 }

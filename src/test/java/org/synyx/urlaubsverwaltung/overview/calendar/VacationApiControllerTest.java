@@ -1,43 +1,43 @@
 package org.synyx.urlaubsverwaltung.overview.calendar;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.synyx.urlaubsverwaltung.api.ApiExceptionHandlerControllerAdvice;
+import org.synyx.urlaubsverwaltung.api.RestControllerAdviceExceptionHandler;
 import org.synyx.urlaubsverwaltung.application.domain.Application;
-import org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus;
 import org.synyx.urlaubsverwaltung.application.service.ApplicationService;
+import org.synyx.urlaubsverwaltung.department.Department;
 import org.synyx.urlaubsverwaltung.department.DepartmentService;
-import org.synyx.urlaubsverwaltung.period.DayLength;
 import org.synyx.urlaubsverwaltung.person.Person;
 import org.synyx.urlaubsverwaltung.person.PersonService;
-import org.synyx.urlaubsverwaltung.testdatacreator.TestDataCreator;
 
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import static java.time.LocalDate.of;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 import static org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus.ALLOWED;
+import static org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus.WAITING;
+import static org.synyx.urlaubsverwaltung.demodatacreator.DemoDataCreator.createApplication;
+import static org.synyx.urlaubsverwaltung.demodatacreator.DemoDataCreator.createPerson;
+import static org.synyx.urlaubsverwaltung.period.DayLength.FULL;
 
-
-@RunWith(MockitoJUnitRunner.class)
-public class VacationApiControllerTest {
+@ExtendWith(MockitoExtension.class)
+class VacationApiControllerTest {
 
     private VacationApiController sut;
 
@@ -48,130 +48,234 @@ public class VacationApiControllerTest {
     @Mock
     private DepartmentService departmentService;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         sut = new VacationApiController(personService, applicationService, departmentService);
     }
 
     @Test
-    public void ensureReturnsAllAllowedVacationsIfNoPersonProvided() throws Exception {
+    void getVacations() throws Exception {
 
-        perform(get("/api/vacations")
+        final Person person = createPerson("muster", "Marlene", "Muster", "muster@test.de");
+        final Application vacationAllowed = createApplication(person,
+            of(2016, 5, 19), of(2016, 5, 20), FULL);
+        vacationAllowed.setStatus(ALLOWED);
+
+        when(applicationService.getApplicationsForACertainPeriodAndPersonAndState(any(LocalDate.class), any(LocalDate.class), eq(person), eq(ALLOWED)))
+            .thenReturn(List.of(vacationAllowed));
+
+        when(personService.getPersonByID(23)).thenReturn(Optional.of(person));
+
+        perform(get("/api/persons/23/vacations")
             .param("from", "2016-01-01")
             .param("to", "2016-12-31"))
-            .andExpect(status().isOk());
-
-        verify(applicationService).getApplicationsForACertainPeriodAndState(
-            LocalDate.of(2016, 1, 1), LocalDate.of(2016, 12, 31), ALLOWED);
-        verifyZeroInteractions(personService);
-    }
-
-    @Test
-    public void ensureReturnsAllowedVacationsOfPersonIfPersonProvided() throws Exception {
-
-        final Person person = TestDataCreator.createPerson();
-        when(personService.getPersonByID(anyInt())).thenReturn(Optional.of(person));
-
-        perform(get("/api/vacations")
-            .param("from", "2016-01-01")
-            .param("to", "2016-12-31")
-            .param("person", "23"))
-            .andExpect(status().isOk());
-
-        verify(applicationService)
-            .getApplicationsForACertainPeriodAndPersonAndState(LocalDate.of(2016, 1, 1),
-                LocalDate.of(2016, 12, 31), person, ALLOWED);
-        verify(personService).getPersonByID(23);
-    }
-
-    @Test
-    public void ensureCorrectConversionOfVacations() throws Exception {
-
-        final Application vacation1 = TestDataCreator.createApplication(TestDataCreator.createPerson("foo"),
-            LocalDate.of(2016, 5, 19), LocalDate.of(2016, 5, 20), DayLength.FULL);
-        vacation1.setStatus(ALLOWED);
-
-        final Application vacation2 = TestDataCreator.createApplication(TestDataCreator.createPerson("bar"),
-            LocalDate.of(2016, 4, 5), LocalDate.of(2016, 4, 10), DayLength.FULL);
-
-        when(applicationService.getApplicationsForACertainPeriodAndState(any(LocalDate.class),
-            any(LocalDate.class), any(ApplicationStatus.class)))
-            .thenReturn(Arrays.asList(vacation1, vacation2));
-
-        perform(get("/api/vacations").param("from", "2016-01-01").param("to", "2016-12-31"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json;charset=UTF-8"))
-            .andExpect(jsonPath("$.response").exists())
-            .andExpect(jsonPath("$.response.vacations").exists())
-            .andExpect(jsonPath("$.response.vacations", hasSize(2)))
-            .andExpect(jsonPath("$.response.vacations[0].from", is("2016-05-19")))
-            .andExpect(jsonPath("$.response.vacations[0].to", is("2016-05-20")))
-            .andExpect(jsonPath("$.response.vacations[0].person").exists());
+            .andExpect(content().contentType("application/json;"))
+            .andExpect(jsonPath("$").exists())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].from", is("2016-05-19")))
+            .andExpect(jsonPath("$[0].to", is("2016-05-20")))
+            .andExpect(jsonPath("$[0].person.firstName", is("Marlene")));
     }
 
     @Test
-    public void ensureBadRequestForMissingFromParameter() throws Exception {
+    void getVacationsNoPersonFound() throws Exception {
 
-        perform(get("/api/vacations")
+        when(personService.getPersonByID(23)).thenReturn(Optional.empty());
+
+        perform(get("/api/persons/23/vacations")
+            .param("from", "2016-01-01")
+            .param("to", "2016-12-31"))
+            .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void getVacationsStartDateAfterEndDate() throws Exception {
+
+        perform(get("/api/persons/23/vacations")
+            .param("from", "2016-06-01")
+            .param("to", "2016-01-31"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getVacationsMissingEndDate() throws Exception {
+
+        perform(get("/api/persons/23/vacations")
             .param("to", "2016-12-31"))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void ensureBadRequestForInvalidFromParameter() throws Exception {
+    void getVacationsWrongStartDate() throws Exception {
 
-        perform(get("/api/vacations")
+        perform(get("/api/persons/23/vacations")
             .param("from", "foo")
             .param("to", "2016-12-31"))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void ensureBadRequestForMissingToParameter() throws Exception {
+    void getVacationsNoEndDate() throws Exception {
 
-        perform(get("/api/vacations")
+        perform(get("/api/persons/23/vacations")
             .param("from", "2016-01-01"))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void ensureBadRequestForInvalidToParameter() throws Exception {
+    void getVacationsWrongEndDate() throws Exception {
 
-        perform(get("/api/vacations")
+        perform(get("/api/persons/23/vacations")
             .param("from", "2016-01-01")
             .param("to", "foo"))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void ensureBadRequestForInvalidPeriod() throws Exception {
+    void getVacationsWrongPerson() throws Exception {
 
-        perform(get("/api/vacations")
+        perform(get("/api/persons/foo/vacations")
             .param("from", "2016-01-01")
-            .param("to", "2015-01-01"))
+            .param("to", "2016-02-01"))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void ensureBadRequestForInvalidPersonParameter() throws Exception {
+    void getVacationsOfOthersOrDepartmentColleaguesWithDepartments() throws Exception {
 
-        perform(get("/api/vacations")
+        final Person person = createPerson("muster", "Marlene", "Muster", "muster@test.de");
+
+        final List<Department> departments = List.of(new Department(), new Department());
+        when(departmentService.getAssignedDepartmentsOfMember(person)).thenReturn(departments);
+
+        when(personService.getPersonByID(23)).thenReturn(Optional.of(person));
+
+        final Application vacationAllowed = createApplication(createPerson(),
+            of(2016, 5, 19), of(2016, 5, 20), FULL);
+        vacationAllowed.setStatus(ALLOWED);
+        final Application vacationWaiting = createApplication(createPerson(),
+            of(2016, 5, 19), of(2016, 5, 20), FULL);
+        vacationAllowed.setStatus(WAITING);
+        when(departmentService.getApplicationsForLeaveOfMembersInDepartmentsOfPerson(eq(person), any(LocalDate.class), any(LocalDate.class)))
+            .thenReturn(List.of(vacationAllowed, vacationWaiting));
+
+        perform(get("/api/persons/23/vacations")
             .param("from", "2016-01-01")
-            .param("to", "foo")
-            .param("person", "foo"))
+            .param("to", "2016-12-31")
+            .param("ofDepartmentMembers", "true"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json;"))
+            .andExpect(jsonPath("$").exists())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].from", is("2016-05-19")))
+            .andExpect(jsonPath("$[0].to", is("2016-05-20")))
+            .andExpect(jsonPath("$[0].person.firstName", is("Marlene")));
+    }
+
+    @Test
+    void getVacationsOfOthersOrDepartmentColleaguesWithoutDepartments() throws Exception {
+
+        final Person person = createPerson("muster", "Marlene", "Muster", "muster@test.de");
+
+        when(departmentService.getAssignedDepartmentsOfMember(person)).thenReturn(List.of());
+
+        when(personService.getPersonByID(23)).thenReturn(Optional.of(person));
+
+        final Application vacationAllowed = createApplication(createPerson(),
+            of(2016, 5, 19), of(2016, 5, 20), FULL);
+        vacationAllowed.setStatus(ALLOWED);
+        final Application vacationWaiting = createApplication(createPerson(),
+            of(2016, 5, 19), of(2016, 5, 20), FULL);
+        vacationAllowed.setStatus(WAITING);
+        when(applicationService.getApplicationsForACertainPeriodAndState(any(LocalDate.class), any(LocalDate.class), eq(ALLOWED)))
+            .thenReturn(List.of(vacationAllowed, vacationWaiting));
+
+        perform(get("/api/persons/23/vacations")
+            .param("from", "2016-01-01")
+            .param("to", "2016-12-31")
+            .param("ofDepartmentMembers", "true"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json;"))
+            .andExpect(jsonPath("$").exists())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].from", is("2016-05-19")))
+            .andExpect(jsonPath("$[0].to", is("2016-05-20")))
+            .andExpect(jsonPath("$[0].person.firstName", is("Marlene")));
+    }
+
+    @Test
+    void getVacationsOfOthersOrDepartmentColleaguesNoPersonFound() throws Exception {
+
+        when(personService.getPersonByID(23)).thenReturn(Optional.empty());
+
+        perform(get("/api/persons/23/vacations")
+            .param("from", "2016-01-01")
+            .param("to", "2016-12-31")
+            .param("ofDepartmentMembers", "true"))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void ensureBadRequestIfThereIsNoPersonForGivenID() throws Exception {
-        perform(get("/api/vacations")
+    void getVacationsOfOthersOrDepartmentColleaguesStartDateAfterEndDate() throws Exception {
+
+        perform(get("/api/persons/23/vacations")
+            .param("from", "2016-06-01")
+            .param("to", "2016-01-31")
+            .param("ofDepartmentMembers", "true"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getVacationsOfOthersOrDepartmentColleaguesMissingEndDate() throws Exception {
+
+        perform(get("/api/persons/23/vacations")
+            .param("to", "2016-12-31")
+            .param("ofDepartmentMembers", "true"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getVacationsOfOthersOrDepartmentColleaguesWrongStartDate() throws Exception {
+
+        perform(get("/api/persons/23/vacations")
+            .param("from", "foo")
+            .param("to", "2016-12-31")
+            .param("ofDepartmentMembers", "true"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getVacationsOfOthersOrDepartmentColleaguesNoEndDate() throws Exception {
+
+        perform(get("/api/persons/23/vacations")
+            .param("from", "2016-01-01")
+            .param("ofDepartmentMembers", "true"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getVacationsOfOthersOrDepartmentColleaguesWrongEndDate() throws Exception {
+
+        perform(get("/api/persons/23/vacations")
             .param("from", "2016-01-01")
             .param("to", "foo")
-            .param("person", "23"))
+            .param("ofDepartmentMembers", "true"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getVacationsOfOthersOrDepartmentColleaguesWrongPerson() throws Exception {
+
+        perform(get("/api/persons/foo/vacations")
+            .param("from", "2016-01-01")
+            .param("to", "2016-02-01")
+            .param("ofDepartmentMembers", "true"))
             .andExpect(status().isBadRequest());
     }
 
     private ResultActions perform(MockHttpServletRequestBuilder builder) throws Exception {
-        return MockMvcBuilders.standaloneSetup(sut).setControllerAdvice(new ApiExceptionHandlerControllerAdvice()).build().perform(builder);
+        return standaloneSetup(sut).setControllerAdvice(new RestControllerAdviceExceptionHandler()).build().perform(builder);
     }
 }

@@ -1,9 +1,8 @@
 package org.synyx.urlaubsverwaltung.person.api;
 
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
-
-public class PersonResponse extends ResourceSupport {
+public class PersonResponse extends RepresentationModel<PersonResponse> {
 
     private String email;
     private String firstName;

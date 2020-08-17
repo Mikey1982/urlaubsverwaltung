@@ -1,10 +1,10 @@
 package org.synyx.urlaubsverwaltung.availability.api;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.synyx.urlaubsverwaltung.application.domain.Application;
 import org.synyx.urlaubsverwaltung.application.service.ApplicationService;
 import org.synyx.urlaubsverwaltung.person.Person;
@@ -21,28 +21,27 @@ import static org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus.C
 import static org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus.REJECTED;
 import static org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus.REVOKED;
 import static org.synyx.urlaubsverwaltung.application.domain.ApplicationStatus.TEMPORARY_ALLOWED;
-import static org.synyx.urlaubsverwaltung.availability.api.TimedAbsence.Type.VACATION;
+import static org.synyx.urlaubsverwaltung.demodatacreator.DemoDataCreator.createApplication;
+import static org.synyx.urlaubsverwaltung.demodatacreator.DemoDataCreator.createPerson;
 import static org.synyx.urlaubsverwaltung.period.DayLength.FULL;
 import static org.synyx.urlaubsverwaltung.period.DayLength.MORNING;
 import static org.synyx.urlaubsverwaltung.period.DayLength.NOON;
-import static org.synyx.urlaubsverwaltung.testdatacreator.TestDataCreator.createApplication;
-import static org.synyx.urlaubsverwaltung.testdatacreator.TestDataCreator.createPerson;
 
-@RunWith(MockitoJUnitRunner.class)
-public class VacationAbsenceProviderTest {
+@ExtendWith(MockitoExtension.class)
+class VacationAbsenceProviderTest {
 
     private VacationAbsenceProvider sut;
 
     @Mock
     private ApplicationService applicationService;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         sut = new VacationAbsenceProvider(applicationService);
     }
 
     @Test
-    public void ensurePersonIsNotAvailableOnVacationFullDayWaiting() {
+    void ensurePersonIsNotAvailableOnVacationFullDayWaiting() {
 
         final Person person = createPerson();
         final LocalDate fullDayVacationDate = LocalDate.of(2016, 1, 4);
@@ -56,13 +55,12 @@ public class VacationAbsenceProviderTest {
 
         List<TimedAbsence> absencesList = updatedTimedAbsenceSpans.getAbsencesList();
         assertThat(absencesList).hasSize(1);
-        assertThat(absencesList.get(0).getType()).isEqualTo(VACATION);
         assertThat(absencesList.get(0).getPartOfDay()).isEqualTo(FULL.name());
         assertThat(absencesList.get(0).getRatio()).isEqualTo(BigDecimal.valueOf(1.0));
     }
 
     @Test
-    public void ensurePersonIsNotAvailableOnTemporaryAllowed() {
+    void ensurePersonIsNotAvailableOnTemporaryAllowed() {
 
         final Person person = createPerson();
         final LocalDate fullDayVacationDate = LocalDate.of(2016, 1, 4);
@@ -77,13 +75,12 @@ public class VacationAbsenceProviderTest {
 
         List<TimedAbsence> absencesList = updatedTimedAbsenceSpans.getAbsencesList();
         assertThat(absencesList).hasSize(1);
-        assertThat(absencesList.get(0).getType()).isEqualTo(VACATION);
         assertThat(absencesList.get(0).getPartOfDay()).isEqualTo(FULL.name());
         assertThat(absencesList.get(0).getRatio()).isEqualTo(BigDecimal.valueOf(1.0));
     }
 
     @Test
-    public void ensurePersonIsNotAvailableOnAllowed() {
+    void ensurePersonIsNotAvailableOnAllowed() {
 
         final Person person = createPerson();
         final LocalDate fullDayVacationDate = LocalDate.of(2016, 1, 4);
@@ -98,13 +95,12 @@ public class VacationAbsenceProviderTest {
 
         List<TimedAbsence> absencesList = updatedTimedAbsenceSpans.getAbsencesList();
         assertThat(absencesList).hasSize(1);
-        assertThat(absencesList.get(0).getType()).isEqualTo(VACATION);
         assertThat(absencesList.get(0).getPartOfDay()).isEqualTo(FULL.name());
         assertThat(absencesList.get(0).getRatio()).isEqualTo(BigDecimal.valueOf(1.0));
     }
 
     @Test
-    public void ensurePersonIsAvailableOnRejected() {
+    void ensurePersonIsAvailableOnRejected() {
 
         final Person person = createPerson();
         final LocalDate fullDayVacationDate = LocalDate.of(2016, 1, 4);
@@ -122,7 +118,7 @@ public class VacationAbsenceProviderTest {
     }
 
     @Test
-    public void ensurePersonIsAvailableOnCancelled() {
+    void ensurePersonIsAvailableOnCancelled() {
 
         final Person person = createPerson();
         final LocalDate fullDayVacationDate = LocalDate.of(2016, 1, 4);
@@ -140,7 +136,7 @@ public class VacationAbsenceProviderTest {
     }
 
     @Test
-    public void ensurePersonIsAvailableOnRevoked() {
+    void ensurePersonIsAvailableOnRevoked() {
 
         final Person person = createPerson();
         final LocalDate fullDayVacationDate = LocalDate.of(2016, 1, 4);
@@ -158,7 +154,7 @@ public class VacationAbsenceProviderTest {
     }
 
     @Test
-    public void ensurePersonIsNotAvailableOnVacationOneHalfDay() {
+    void ensurePersonIsNotAvailableOnVacationOneHalfDay() {
 
         final Person testPerson = createPerson();
         final LocalDate twoHalfDayVacationsDate = LocalDate.of(2016, 1, 5);
@@ -172,13 +168,12 @@ public class VacationAbsenceProviderTest {
 
         List<TimedAbsence> absencesList = updatedTimedAbsenceSpans.getAbsencesList();
         assertThat(absencesList).hasSize(1);
-        assertThat(absencesList.get(0).getType()).isEqualTo(VACATION);
         assertThat(absencesList.get(0).getPartOfDay()).isEqualTo(MORNING.name());
         assertThat(absencesList.get(0).getRatio()).isEqualTo(BigDecimal.valueOf(0.5));
     }
 
     @Test
-    public void ensurePersonIsNotAvailableOnVacationTwoHalfDays() {
+    void ensurePersonIsNotAvailableOnVacationTwoHalfDays() {
 
         final Person testPerson = createPerson();
         final LocalDate twoHalfDayVacationsDate = LocalDate.of(2016, 1, 5);
@@ -193,16 +188,14 @@ public class VacationAbsenceProviderTest {
 
         List<TimedAbsence> absencesList = updatedTimedAbsenceSpans.getAbsencesList();
         assertThat(absencesList).hasSize(2);
-        assertThat(absencesList.get(0).getType()).isEqualTo(VACATION);
         assertThat(absencesList.get(0).getPartOfDay()).isEqualTo(MORNING.name());
         assertThat(absencesList.get(0).getRatio()).isEqualTo(BigDecimal.valueOf(0.5));
-        assertThat(absencesList.get(1).getType()).isEqualTo(VACATION);
         assertThat(absencesList.get(1).getPartOfDay()).isEqualTo(NOON.name());
         assertThat(absencesList.get(1).getRatio()).isEqualTo(BigDecimal.valueOf(0.5));
     }
 
     @Test
-    public void ensureReturnsGiveAbsenceSpansIfNoVacationFound() {
+    void ensureReturnsGiveAbsenceSpansIfNoVacationFound() {
 
         final Person person = createPerson();
         final LocalDate vacationDay = LocalDate.of(2016, 1, 4);

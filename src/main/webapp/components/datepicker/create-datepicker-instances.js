@@ -40,14 +40,7 @@ export default async function createDatepickerInstances(selectors, regional, url
         calendrier.css({'top': top, 'left': left});
       }, 10);
 
-      let date;
-
-      if ($(input).datepicker("getDate") == null) {
-        date = new Date();
-      } else {
-        date = $(input).datepicker("getDate");
-      }
-
+      const date = $(input).datepicker("getDate") || new Date();
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
 
@@ -97,8 +90,8 @@ function getAbsences(data) {
 
   const absences = [];
 
-  for (let i = 0; i < data.response.absences.length; i++) {
-    const value = data.response.absences[i];
+  for (let i = 0; i < data.absences.length; i++) {
+    const value = data.absences[i];
     if ($.inArray(value, absences) == -1) {
       absences.push(value);
     }
@@ -111,8 +104,8 @@ function getPublicHolidays(data) {
 
   const publicHolidayDates = [];
 
-  for (let i = 0; i < data.response.publicHolidays.length; i++) {
-    const value = data.response.publicHolidays[i];
+  for (let i = 0; i < data.publicHolidays.length; i++) {
+    const value = data.publicHolidays[i];
     publicHolidayDates.push(value);
   }
 

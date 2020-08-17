@@ -1,6 +1,6 @@
 // disabling date-fns#format is ok since we're formatting dates for api requests
 // eslint-disable-next-line @urlaubsverwaltung/no-date-fns
-import { isAfter, format } from 'date-fns'
+import { isAfter, format, parseISO } from 'date-fns'
 import { getJSON } from "../js/fetch"
 
 export default async function sendGetDepartmentVacationsRequest(urlPrefix, startDate, endDate, personId, elementSelector) {
@@ -16,10 +16,10 @@ export default async function sendGetDepartmentVacationsRequest(urlPrefix, start
   const startDateString = format(startDate, "yyyy-MM-dd");
   const toDateString = format(endDate, "yyyy-MM-dd");
 
-  const url = `${urlPrefix}/vacations?departmentMembers=true&from=${startDateString}&to=${toDateString}&person=${personId}`;
+  const url = `${urlPrefix}/persons/${personId}/vacations?from=${startDateString}&to=${toDateString}&ofDepartmentMembers`;
 
   const data = await getJSON(url);
-  const vacations = data.response.vacations;
+  const vacations = data;
 
   const element = document.querySelector(elementSelector);
   element.innerHTML = window.uv.i18n['application.applier.applicationsOfColleagues'] + "<br />";
@@ -33,8 +33,8 @@ export default async function sendGetDepartmentVacationsRequest(urlPrefix, start
 }
 
 function createHtmlForVacation(vacation) {
-  const startDate = format(Date.parse(vacation.from), "dd.MM.yyyy");
-  const endDate = format(Date.parse(vacation.to), "dd.MM.yyyy");
+  const startDate = format(parseISO(vacation.from), "dd.MM.yyyy");
+  const endDate = format(parseISO(vacation.to), "dd.MM.yyyy");
   const person = vacation.person.niceName;
 
   let html = `${person}: ${startDate} - ${endDate}`;
