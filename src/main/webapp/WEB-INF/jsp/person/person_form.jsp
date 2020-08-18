@@ -215,15 +215,14 @@
                                             <spring:message code="person.form.permissions.roles.DEPARTMENT_HEAD.description"/>
                                         </label>
                                         <label class="ml-5 pb-2">
-                                            <form:checkbox path="notifications" value="NOTIFICATION_DEPARTMENT_HEAD"/>
+                                            <form:checkbox path="notifications" value="NOTIFICATION_DEPARTMENT_HEAD" onchange="$(this).prop('checked')&&$(\"[value='DEPARTMENT_HEAD']\").prop('checked',true);"/>
                                             <spring:message code="person.form.notifications.DEPARTMENT_HEAD"/>
                                         </label>
                                         <label class="${!empty departments ? 'info' : ''}">
                                             <i class="fa fa-fw fa-info-circle" aria-hidden="true"></i>
                                             <c:choose>
                                                 <c:when test="${empty departments}">
-                                                    <spring:message
-                                                        code="person.form.permissions.roles.DEPARTMENT_HEAD.departments.none.description"/>
+                                                    <spring:message code="person.form.permissions.roles.DEPARTMENT_HEAD.departments.none.description"/>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <spring:message
@@ -246,8 +245,7 @@
                                             code="person.form.permissions.roles.SECOND_STAGE_AUTHORITY.description"/>
                                         </label>
                                         <label class="ml-5 pb-2">
-                                            <form:checkbox path="notifications"
-                                                           value="NOTIFICATION_SECOND_STAGE_AUTHORITY"/>
+                                            <form:checkbox path="notifications" value="NOTIFICATION_SECOND_STAGE_AUTHORITY" onchange="$(this).prop('checked')&&$(\"[value='SECOND_STAGE_AUTHORITY']\").prop('checked',true);"/>
                                             <spring:message code="person.form.notifications.SECOND_STAGE_AUTHORITY"/>
                                         </label>
                                         <label class="${!empty secondStageDepartments ? 'info' : ''}">
@@ -276,14 +274,14 @@
                                         <label class="mb-2">
                                             <form:checkbox path="permissions" value="BOSS" onchange="!$(this).prop('checked')&&$(\"[value*='NOTIFICATION_BOSS']\").prop('checked',false);"/>
                                             <spring:message code="person.form.permissions.roles.BOSS.description"/>
-                                            
+
                                         </label>
                                         <label class="ml-5 mb-2">
-                                            <form:checkbox path="notifications" value="NOTIFICATION_BOSS_ALL"  onchange="$(this).prop('checked')&&$(\"[value='NOTIFICATION_BOSS_DEPARTMENTS']\").prop('checked',false);"/>
+                                            <form:checkbox path="notifications" value="NOTIFICATION_BOSS_ALL" onchange="$(this).prop('checked')&&$(\"[value='NOTIFICATION_BOSS_DEPARTMENTS']\").prop('checked',false);$(this).prop('checked')&&$(\"[value='BOSS']\").prop('checked',true);"/>
                                             <spring:message code="person.form.notifications.BOSS.all"/>
                                         </label>
                                         <label class="ml-5 mb-2">
-                                            <form:checkbox path="notifications" value="NOTIFICATION_BOSS_DEPARTMENTS" onchange="$(this).prop('checked')&&$(\"[value='NOTIFICATION_BOSS_ALL']\").prop('checked',false);"/>
+                                            <form:checkbox path="notifications" value="NOTIFICATION_BOSS_DEPARTMENTS" onchange="$(this).prop('checked')&&$(\"[value='NOTIFICATION_BOSS_ALL']\").prop('checked',false);$(this).prop('checked')&&$(\"[value='BOSS']\").prop('checked',true);"/>
                                             <spring:message code="person.form.notifications.BOSS.departments"/>
                                         </label>
                                     </div>
@@ -293,15 +291,15 @@
                                             <spring:message code="person.form.permissions.roles.OFFICE"/>
                                         </strong>
                                         <label class="mb-2">
-                                            <form:checkbox path="permissions" value="OFFICE"/><spring:message
-                                            code="person.form.permissions.roles.OFFICE.description"/>
+                                            <form:checkbox path="permissions" value="OFFICE" onchange="$(this).prop('checked')||$(\"[value*='NOTIFICATION_OFFICE']\").prop('checked',false);"/>
+                                            <spring:message code="person.form.permissions.roles.OFFICE.description"/>
                                         </label>
                                         <label class="ml-5 pb-2">
-                                            <form:checkbox path="notifications" value="NOTIFICATION_OFFICE"/>
+                                            <form:checkbox path="notifications" value="NOTIFICATION_OFFICE" onchange="$(this).prop('checked')&&$(\"[value='OFFICE']\").prop('checked',true);"/>
                                             <spring:message code="person.form.notifications.OFFICE"/>
                                         </label>
                                         <label class="ml-5 pb-2">
-                                            <form:checkbox path="notifications" value="OVERTIME_NOTIFICATION_OFFICE"/>
+                                            <form:checkbox path="notifications" value="OVERTIME_NOTIFICATION_OFFICE" onchange="$(this).prop('checked')&&$(\"[value='OFFICE']\").prop('checked',true);"/>
                                             <spring:message code="person.form.notifications.OFFICE.overtime"/>
                                         </label>
                                     </div>
